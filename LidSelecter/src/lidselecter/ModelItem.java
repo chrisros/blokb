@@ -7,6 +7,7 @@ package lidselecter;
 public class ModelItem {
 
     public int id;
+    public int positie;
     public String voornaam;
     public String achternaam;
     public String datum;
