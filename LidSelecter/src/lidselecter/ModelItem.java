@@ -19,6 +19,7 @@ public class ModelItem {
     public int locatieCode;
     public String kaartType;
     public String naam;
+    public int isBetaald;
 
     @Override
     public String toString() {
