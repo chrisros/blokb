@@ -36,30 +36,32 @@ public class Toernooi_start extends javax.swing.JFrame {
     int rondeId = 1;
     final int minSpelersPerTafel = 4;
     final int fiches = 1000;
-    
+
     /**
      * Creates new form Toernooi_start
+     *
      * @param id = currently selected toernooi
      */
     public Toernooi_start(int id) {
-        whereClaus=id;
+        whereClaus = id;
         initComponents();
         setLocationRelativeTo(null);
         TafelList.setModel(tafelListModel);
         SpelerList.setModel(spelerListModel);
-        RondeList.setModel(rondeListModel);
+        rondeLabel.setText(Integer.toString(rondeId));
+        idToernooiTxt.setText(Integer.toString(whereClaus));
         toernooiGegevens();
+        toevoegenTafel();
         toevoegenSpelers();
+        weergevenTafels();
         //vulLijst();
 
     }
 
-    private void elimineerSpeler()
-    {
-        
+    private void elimineerSpeler() {
+
     }
 
-    
     private void toernooiGegevens() {
         try {
             Sql_connect.doConnect();
@@ -83,86 +85,81 @@ public class Toernooi_start extends javax.swing.JFrame {
         } catch (SQLException ex) {
             Logger.getLogger(Toernooi_start.class.getName()).log(Level.SEVERE, null, ex);
         }
-        totaalAantalTafels=aantalTafels;
         aantalTafels = inschrijvingen / maxPertafel;
         spelers = (aantalTafels * maxPertafel);
         overigeSpelers = inschrijvingen - spelers;
+        totaalAantalTafels = aantalTafels;
         if (overigeSpelers > 0) {
             if (overigeSpelers < minSpelersPerTafel) {
                 int overschot = maxPertafel + overigeSpelers;
-                    //aantalTafels++;
-                    bonusTafel1=(overschot/2);
-                    bonusTafel2 = overschot-bonusTafel1;
-                    totaalAantalTafels=totaalAantalTafels+2;
-            } else
-            {
+                //aantalTafels++;
+                bonusTafel1 = (overschot / 2);
+                bonusTafel2 = overschot - bonusTafel1;
+                totaalAantalTafels = totaalAantalTafels + 2;
+            } else {
                 //aantalTafels++;
                 bonusTafel1 = overigeSpelers;
                 bonusTafel2 = 0;
                 totaalAantalTafels++;
             }
         }
+
+        System.out.println("aantalTafels" + aantalTafels);
+        System.out.println("bonusTafel1" + bonusTafel1);
+        System.out.println("bonusTafel2" + bonusTafel2);
         
-        System.out.println("aantalTafels"+aantalTafels);
-        System.out.println("bonusTafel1"+bonusTafel1);
-        System.out.println("bonusTafel2"+bonusTafel2);
-        toevoegenTafel();
     }
 
-    
-    private void toevoegenTafel()
-    {
+    private void toevoegenTafel() {
         int count = 0;
-        while(count<aantalTafels)
-        {
+        while (count < aantalTafels) {
             try {
                 Sql_connect.doConnect();
-                PreparedStatement stat = Sql_connect.getConnection().prepareStatement("INSERT INTO tafel (spelerStart, spelerAanwezig, toernooi) VALUES (?, ?, ?)");
+                PreparedStatement stat = Sql_connect.getConnection().prepareStatement("INSERT INTO tafel (spelerStart, spelerAanwezig, toernooi, ronde) VALUES (?, ?, ?, ?)");
                 stat.setInt(1, maxPertafel);
                 stat.setInt(2, maxPertafel);
                 stat.setInt(3, whereClaus);
+                stat.setInt(4, rondeId);
                 stat.executeUpdate();
                 count++;
             } catch (SQLException ex) {
                 Logger.getLogger(Toernooi_start.class.getName()).log(Level.SEVERE, null, ex);
             }
-            }
-        if(bonusTafel1 !=0)
-                {
+        }
+        if (bonusTafel1 != 0) {
             try {
                 Sql_connect.doConnect();
-                PreparedStatement stat2 = Sql_connect.getConnection().prepareStatement("INSERT INTO tafel (spelerStart, spelerAanwezig, toernooi) VALUES (?, ?, ?)");
+                PreparedStatement stat2 = Sql_connect.getConnection().prepareStatement("INSERT INTO tafel (spelerStart, spelerAanwezig, toernooi, ronde) VALUES (?, ?, ?, ?)");
                 stat2.setInt(1, bonusTafel1);
                 stat2.setInt(2, bonusTafel1);
                 stat2.setInt(3, whereClaus);
+                stat2.setInt(4, rondeId);
                 stat2.executeUpdate();
             } catch (SQLException ex) {
                 Logger.getLogger(Toernooi_start.class.getName()).log(Level.SEVERE, null, ex);
             }
 
-            }
-            if(bonusTafel2 !=0)
-                {
+        }
+        if (bonusTafel2 != 0) {
             try {
                 Sql_connect.doConnect();
-                PreparedStatement stat3 = Sql_connect.getConnection().prepareStatement("INSERT INTO tafel (spelerStart, spelerAanwezig, toernooi) VALUES (?, ?, ?)");
+                PreparedStatement stat3 = Sql_connect.getConnection().prepareStatement("INSERT INTO tafel (spelerStart, spelerAanwezig, toernooi, ronde) VALUES (?, ?, ?, ?)");
                 stat3.setInt(1, bonusTafel2);
                 stat3.setInt(2, bonusTafel2);
                 stat3.setInt(3, whereClaus);
+                stat3.setInt(4, rondeId);
                 stat3.executeUpdate();
             } catch (SQLException ex) {
                 Logger.getLogger(Toernooi_start.class.getName()).log(Level.SEVERE, null, ex);
             }
+        }
     }
-    }
-    
-    private void toevoegenSpelers()
-    {
-        
+
+    private void toevoegenSpelers() {
+
         int tafelCount = 1;
-        while (tafelCount<=aantalTafels)
-        {
-        try {
+        while (tafelCount <= aantalTafels) {
+            try {
                 Sql_connect.doConnect();
                 PreparedStatement stat3 = Sql_connect.getConnection().prepareStatement("UPDATE toernooideelnemer SET Tafel_code=?, Fiches=? WHERE Tafel_code is null AND Id_toernooi = ? LIMIT ?");
                 stat3.setInt(1, tafelCount);
@@ -174,40 +171,40 @@ public class Toernooi_start extends javax.swing.JFrame {
                 Logger.getLogger(Toernooi_start.class.getName()).log(Level.SEVERE, null, ex);
             }
             tafelCount++;
-            
-    } if(bonusTafel1!=0)
-    {
-        
-        {
-        try {
-                Sql_connect.doConnect();
-                PreparedStatement stat3 = Sql_connect.getConnection().prepareStatement("UPDATE toernooideelnemer SET Tafel_code=?, Fiches=? WHERE Tafel_code is null AND Id_toernooi = ? LIMIT ?");
-                stat3.setInt(1, tafelCount);
-                stat3.setInt(2, fiches);
-                stat3.setInt(3, whereClaus);
-                stat3.setInt(4, bonusTafel1);
-                stat3.executeUpdate();
-            } catch (SQLException ex) {
-                Logger.getLogger(Toernooi_start.class.getName()).log(Level.SEVERE, null, ex);
-            }
+
+        }
+        if (bonusTafel1 != 0) {
+
+            {
+                try {
+                    Sql_connect.doConnect();
+                    PreparedStatement stat3 = Sql_connect.getConnection().prepareStatement("UPDATE toernooideelnemer SET Tafel_code=?, Fiches=? WHERE Tafel_code is null AND Id_toernooi = ? LIMIT ?");
+                    stat3.setInt(1, tafelCount);
+                    stat3.setInt(2, fiches);
+                    stat3.setInt(3, whereClaus);
+                    stat3.setInt(4, bonusTafel1);
+                    stat3.executeUpdate();
+                } catch (SQLException ex) {
+                    Logger.getLogger(Toernooi_start.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 tafelCount++;
-        
-    } if(bonusTafel2!=0)
-    {
+
+            }
+            if (bonusTafel2 != 0) {
+                try {
+                    Sql_connect.doConnect();
+                    PreparedStatement stat3 = Sql_connect.getConnection().prepareStatement("UPDATE toernooideelnemer SET Tafel_code=?, Fiches=? WHERE Tafel_code is null AND Id_toernooi = ? LIMIT ?");
+                    stat3.setInt(1, tafelCount);
+                    stat3.setInt(2, fiches);
+                    stat3.setInt(3, whereClaus);
+                    stat3.setInt(4, bonusTafel2);
+                    stat3.executeUpdate();
+                } catch (SQLException ex) {
+                    Logger.getLogger(Toernooi_start.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                tafelCount++;
+            }
             try {
-                Sql_connect.doConnect();
-                PreparedStatement stat3 = Sql_connect.getConnection().prepareStatement("UPDATE toernooideelnemer SET Tafel_code=?, Fiches=? WHERE Tafel_code is null AND Id_toernooi = ? LIMIT ?");
-                stat3.setInt(1, tafelCount);
-                stat3.setInt(2, fiches);
-                stat3.setInt(3, whereClaus);
-                stat3.setInt(4, bonusTafel2);
-                stat3.executeUpdate();
-            } catch (SQLException ex) {
-                Logger.getLogger(Toernooi_start.class.getName()).log(Level.SEVERE, null, ex);
-            }
-                tafelCount++;
-        } 
-    try {
                 Sql_connect.doConnect();
                 PreparedStatement stat3 = Sql_connect.getConnection().prepareStatement("INSERT INTO ronde (Id_toernooi, Id_ronde, Tafel_aantal) VALUES (?, ?, ?)");
                 stat3.setInt(1, whereClaus);
@@ -217,17 +214,77 @@ public class Toernooi_start extends javax.swing.JFrame {
             } catch (SQLException ex) {
                 Logger.getLogger(Toernooi_start.class.getName()).log(Level.SEVERE, null, ex);
             }
+        }
     }
+
+    private boolean nextRoundFinal() {
+        if (totaalAantalTafels > maxPertafel) {
+            return true;
+        } else {
+            return false;
+        }
     }
-    private boolean nextRoundFinal()
+
+    private void weergevenTafels() {
+        try {
+            String prepSqlStatement = "SELECT * FROM tafel WHERE toernooi = ? AND ronde = ?";
+                PreparedStatement stat = Sql_connect.getConnection().prepareStatement(prepSqlStatement);
+                stat.setInt(1, whereClaus);
+                stat.setInt(2, rondeId);
+                ResultSet result = stat.executeQuery();
+
+                tafelListModel.removeAllElements();
+                int i=1;
+                while (result.next()) {
+                    ModelItem item = new ModelItem();
+                    item.idTafel = result.getString("Tafel_code");
+                    item.maxPTafel = result.getString("spelerStart");
+                    item.naam = "Tafel "+i+" ("+result.getString("spelerAanwezig")+" Spelers)";
+                    i++;
+                    tafelListModel.addElement(item);
+                }
+        } catch (Exception e) {
+            ePopup(e);
+        }
+    }
+
+   private int getSelectedTafel() {
+        try {
+            if (TafelList.getSelectedValue() == null) {
+                return 1;
+            } else {
+                ModelItem selectedItem = (ModelItem) TafelList.getSelectedValue();
+                return Integer.parseInt(selectedItem.idTafel);
+            }
+        } catch (Exception e) {
+            return 1;
+        }
+
+    }
+
+private void weergevenSpelers()
     {
-        if(totaalAantalTafels>maxPertafel){return true;}
-        else{return false;}
+     try {
+            String prepSqlStatement = "Select P.Voornaam, P.Achternaam from persoon P join toernooideelnemer T on T.Id_persoon = P.Id_persoon WHERE T.Id_toernooi = ? AND T.Tafel_code = ?";
+                PreparedStatement stat = Sql_connect.getConnection().prepareStatement(prepSqlStatement);
+                stat.setInt(1, whereClaus);
+                stat.setInt(2, getSelectedTafel());
+                ResultSet result = stat.executeQuery();
+
+                spelerListModel.removeAllElements();
+                
+                while (result.next()) {
+                    ModelItem item = new ModelItem();
+                    item.voornaam = result.getString("P.Voornaam");
+                    item.achternaam = result.getString("P.Achternaam");
+                    
+                    spelerListModel.addElement(item);
+                }
+        } catch (Exception e) {
+            
+            ePopup(e);
+        }   
     }
-    
-    
-    
-    
     
     
     
@@ -454,9 +511,8 @@ public class Toernooi_start extends javax.swing.JFrame {
         TafelList = new javax.swing.JList();
         jPanel2 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        RondeList = new javax.swing.JList();
         vulRondeBtn = new javax.swing.JButton();
+        rondeLabel = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         jScrollPane3 = new javax.swing.JScrollPane();
@@ -482,6 +538,11 @@ public class Toernooi_start extends javax.swing.JFrame {
         TafelList.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 TafelListMouseClicked(evt);
+            }
+        });
+        TafelList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                TafelListValueChanged(evt);
             }
         });
         jScrollPane1.setViewportView(TafelList);
@@ -510,19 +571,7 @@ public class Toernooi_start extends javax.swing.JFrame {
                 .addGap(40, 40, 40))
         );
 
-        jLabel2.setText("Ronde");
-
-        RondeList.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
-        RondeList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-                RondeListValueChanged(evt);
-            }
-        });
-        jScrollPane2.setViewportView(RondeList);
+        jLabel2.setText("Ronde:");
 
         vulRondeBtn.setText("vul Rondes");
         vulRondeBtn.addActionListener(new java.awt.event.ActionListener() {
@@ -536,26 +585,26 @@ public class Toernooi_start extends javax.swing.JFrame {
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2)
-                            .addComponent(vulRondeBtn))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addComponent(jLabel2)
+                .addGap(18, 18, 18)
+                .addComponent(rondeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(vulRondeBtn)
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 266, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(vulRondeBtn)
-                .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel2)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                            .addComponent(vulRondeBtn)
+                            .addContainerGap())
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                            .addComponent(rondeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(20, 20, 20)))))
         );
 
         jLabel3.setText("Speler");
@@ -638,6 +687,7 @@ public class Toernooi_start extends javax.swing.JFrame {
                         .addComponent(jButton1))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addComponent(jLabel4)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -647,17 +697,15 @@ public class Toernooi_start extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(naamToernooiTxt))
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addComponent(MELDINGFIELD, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(MELDINGFIELD, javax.swing.GroupLayout.DEFAULT_SIZE, 286, Short.MAX_VALUE)))
                         .addContainerGap())))
         );
 
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jPanel1, jPanel2, jPanel3});
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jPanel1, jPanel3});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -669,18 +717,20 @@ public class Toernooi_start extends javax.swing.JFrame {
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(idToernooiTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel4)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 7, Short.MAX_VALUE)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(26, 26, 26)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(MELDINGFIELD, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(5, 5, 5)
-                .addComponent(jButton1))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(MELDINGFIELD, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(5, 5, 5)
+                        .addComponent(jButton1))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
         );
 
-        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {jPanel1, jPanel2, jPanel3});
+        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {jPanel1, jPanel3});
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -696,11 +746,6 @@ public class Toernooi_start extends javax.swing.JFrame {
         krijgRondes();
     }//GEN-LAST:event_vulRondeBtnActionPerformed
 
-    private void RondeListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_RondeListValueChanged
-        // TODO add your handling code here:
-        krijgTafels();
-    }//GEN-LAST:event_RondeListValueChanged
-
     private void SpelerListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_SpelerListValueChanged
         // TODO add your handling code here:
         gegevensLijst();
@@ -713,12 +758,17 @@ public class Toernooi_start extends javax.swing.JFrame {
 
     private void TafelListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TafelListMouseClicked
         // TODO add your handling code here:
-        krijgSpeler();
+        //krijgSpeler();
     }//GEN-LAST:event_TafelListMouseClicked
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         elimineerSpeler();
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void TafelListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_TafelListValueChanged
+        weergevenSpelers();
+
+    }//GEN-LAST:event_TafelListValueChanged
 
     private void gegevensLijst() {
         try {
@@ -744,16 +794,32 @@ public class Toernooi_start extends javax.swing.JFrame {
                 if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
-                }
+                
+
+}
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Toernooi_start.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Toernooi_start.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Toernooi_start.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Toernooi_start.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Toernooi_start.class  
+
+.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } 
+
+catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(Toernooi_start.class  
+
+.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } 
+
+catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(Toernooi_start.class  
+
+.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } 
+
+catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(Toernooi_start.class  
+
+.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
@@ -767,7 +833,6 @@ public class Toernooi_start extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel MELDINGFIELD;
-    private javax.swing.JList RondeList;
     private javax.swing.JList SpelerList;
     private javax.swing.JList TafelList;
     public javax.swing.JTextField idToernooiTxt;
@@ -783,9 +848,9 @@ public class Toernooi_start extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     public javax.swing.JTextField naamToernooiTxt;
+    private javax.swing.JLabel rondeLabel;
     private javax.swing.JButton vulRondeBtn;
     // End of variables declaration//GEN-END:variables
 }

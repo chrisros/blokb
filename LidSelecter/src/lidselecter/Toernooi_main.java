@@ -112,7 +112,7 @@ public class Toernooi_main extends javax.swing.JFrame {
             }
 
             setProgress(Integer.parseInt(minSpelersTxt.getText()), Integer.parseInt(maxSpelersTxt.getText()));
-
+            
         } catch (Exception e) {
             //ePopup(e);
             System.out.println(e);
@@ -288,6 +288,9 @@ public class Toernooi_main extends javax.swing.JFrame {
             MELDINGFIELD.setText("Geen naam geselecteerd!");
         }
     }
+    
+               
+         
 
     private void vulLijst() {
         try {
@@ -302,11 +305,12 @@ public class Toernooi_main extends javax.swing.JFrame {
                 String voornaam = parts[0];
                 String achternaam = parts[1];
 
-                String prepSqlStatementVoorActer = "SELECT * FROM persoon where Voornaam like ? AND Achternaam like ?";
+                String prepSqlStatementVoorActer = "SELECT * FROM persoon where Voornaam like ? AND Achternaam like ? AND Id_persoon NOT IN (SELECT Id_persoon From toernooideelnemer where Id_toernooi=?)";
                 PreparedStatement stat = Sql_connect.getConnection().prepareStatement(prepSqlStatementVoorActer);
                 stat.setString(1, "%" + voornaam + "%");
                 stat.setString(2, "%" + achternaam + "%");
-
+                stat.setString(3, toernooi_IdTxt.getText());
+                
                 ResultSet result = stat.executeQuery();
 
                 jListModel.removeAllElements();
@@ -323,9 +327,10 @@ public class Toernooi_main extends javax.swing.JFrame {
                 }
 
             } else {
-                String prepSqlStatement = "SELECT * FROM persoon where Voornaam like ?";
+                String prepSqlStatement = "SELECT * FROM persoon where Voornaam like ? AND Id_persoon NOT IN (SELECT Id_persoon From toernooideelnemer where Id_toernooi=?)";
                 PreparedStatement stat = Sql_connect.getConnection().prepareStatement(prepSqlStatement);
                 stat.setString(1, "%" + zoekVeld + "%");
+                stat.setString(2, toernooi_IdTxt.getText());
                 ResultSet result = stat.executeQuery();
 
                 jListModel.removeAllElements();
@@ -628,6 +633,7 @@ public class Toernooi_main extends javax.swing.JFrame {
         // TODO add your handling code here:
         gegevensOphalen();
         updateProgressBar();
+        vulLijst();
     }//GEN-LAST:event_toernooiTabelMouseClicked
 
     private void inschrijvenToernooiButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_inschrijvenToernooiButtonActionPerformed
@@ -668,7 +674,9 @@ public class Toernooi_main extends javax.swing.JFrame {
             MELDINGFIELD.setText("Ingeschreven voor toernooi: " + idToernooi + " met speler code: " + idSpeler);
 
         } catch (Exception e) {
-            ePopup(e);
+            final String eMessage = "Persoon reeds ingeeschreven voor toernooi.";
+            String error = eMessage;
+            JOptionPane.showMessageDialog(rootPane, error);
             MELDINGFIELD.setText("Inschrijven voor toernooi: " + idToernooi + " is mislukt");
         }
     }
@@ -683,13 +691,16 @@ public class Toernooi_main extends javax.swing.JFrame {
     }//GEN-LAST:event_zoekTxt2KeyReleased
 
     private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
-        // TODO add your handling code here:
-        //toernooiMeenemen();
+        if(toernooi_IdTxt.getText().equals(""))
+        {
+            MELDINGFIELD.setText("Geen toernooi geselecteerd!");
+        }else
+        {
         id = Integer.parseInt(toernooi_IdTxt.getText());
-        System.out.println(id);
         Toernooi_start Toernooi_start = new Toernooi_start(id);
         this.dispose();
         Toernooi_start.setVisible(rootPaneCheckingEnabled);
+        }
     }//GEN-LAST:event_startButtonActionPerformed
 
     private void inschrijfListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_inschrijfListMouseClicked
